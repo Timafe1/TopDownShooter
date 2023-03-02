@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy2 : MonoBehaviour
 {
-    public static event Action<Enemy> OnEnemyKilled;
+    public static event Action<Enemy2> OnEnemyKilled;
     [SerializeField] float health, maxHealth = 3f;
 
     [SerializeField] float moveSpeed = 5f;
@@ -15,6 +15,7 @@ public class Enemy : MonoBehaviour
     //variable for how far ahead of the player  
     public float timeAheadOfPlayer = 1f;
     bool canTurn = true;
+    bool playerRaycastHit = false;
 
     private void Awake()
     {
@@ -42,7 +43,7 @@ public class Enemy : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (target)
+        if (target && playerRaycastHit)
         {
             // Calculate the direction to the predicted position
             Vector3 predictedPosition = (Vector2)target.position + (target.GetComponent<Rigidbody2D>().velocity * timeAheadOfPlayer);
@@ -69,22 +70,13 @@ public class Enemy : MonoBehaviour
             float deltaAngle = Mathf.MoveTowardsAngle(rb.rotation, angle, maxTurnRate * Time.deltaTime);
             rb.rotation = deltaAngle;
 
-            if (Physics2D.Raycast(transform.position, direction, direction.magnitude, LayerMask.GetMask("Player")))
-            {
-                canTurn = false;
-            }
-            else
-            {
-                canTurn = true;
-            }
-
             moveDirection = interceptDirection;
         }
     }
 
     private void FixedUpdate()
     {
-        if (target)
+        if (playerRaycastHit)
         {
             if (canTurn)
             {
@@ -92,6 +84,14 @@ public class Enemy : MonoBehaviour
             }
 
             rb.velocity = moveDirection * moveSpeed;
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            playerRaycastHit = true;
         }
     }
 }

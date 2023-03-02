@@ -5,6 +5,12 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public float speed = 5f; // adjust this to change the speed of the player
+    private Rigidbody2D rb;
+
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody2D>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -13,10 +19,10 @@ public class PlayerController : MonoBehaviour
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
-        // Calculate the new position of the player
-        Vector3 newPosition = transform.position + new Vector3(horizontalInput, verticalInput, 0f) * speed * Time.deltaTime;
+        // Calculate the movement direction of the player
+        Vector2 movementDirection = new Vector2(horizontalInput, verticalInput).normalized;
 
-        // Set the new position of the player
-        transform.position = newPosition;
+        // Set the velocity of the player
+        rb.velocity = movementDirection * speed;
     }
 }
