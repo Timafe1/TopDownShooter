@@ -24,9 +24,7 @@ public class Enemy2 : MonoBehaviour
     private void Start()
     {
         health = maxHealth;
-        target = GameObject.Find("Player").transform;
     }
-
 
     public void TakeDamage(float damageAmount)
     {
@@ -40,10 +38,10 @@ public class Enemy2 : MonoBehaviour
             OnEnemyKilled?.Invoke(this);
         }
     }
-    // Update is called once per frame
+
     private void Update()
     {
-        if (target && playerRaycastHit)
+        if (target != null && playerRaycastHit)
         {
             // Calculate the direction to the predicted position
             Vector3 predictedPosition = (Vector2)target.position + (target.GetComponent<Rigidbody2D>().velocity * timeAheadOfPlayer);
@@ -71,27 +69,36 @@ public class Enemy2 : MonoBehaviour
             rb.rotation = deltaAngle;
 
             moveDirection = interceptDirection;
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        if (playerRaycastHit)
-        {
-            if (canTurn)
-            {
-                rb.rotation = Quaternion.LookRotation(Vector3.forward, moveDirection).eulerAngles.z;
-            }
 
             rb.velocity = moveDirection * moveSpeed;
         }
+        else
+        {
+            rb.velocity = Vector2.zero;
+        }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            playerRaycastHit = true;
+            // Check if the player is in sight using a raycast
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, collision.transform.position - transform.position, Mathf.Infinity, LayerMask.GetMask("Player"));
+
+            if (hit.collider != null && hit.collider.gameObject.CompareTag("Player"))
+            {
+                target = collision.transform;
+                playerRaycastHit = true;
+            }
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            target = null;
+            playerRaycastHit = false;
         }
     }
 }
